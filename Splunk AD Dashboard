@@ -1,0 +1,172 @@
+<form>
+  <label>What have you been up to?</label>
+  <description>Reports on specified Active Directory activities of the user</description>
+  <fieldset submitButton="false">
+    <input type="text" token="username">
+      <label>Please enter username</label>
+    </input>
+    <input type="time" token="time" searchWhenChanged="true">
+      <label>Please choose time range</label>
+      <default>
+        <earliest>@d</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <single>
+        <title>Accounts created</title>
+        <search>
+          <query>index=%INDEX_NAME% EventCode=4720 host=* Account_Name=$username$|stats count</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">114</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.size">large</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Accounts deleted</title>
+        <search>
+          <query>index=%INDEX_NAME% EventCode=4726 host=* Account_Name=$username$|stats count</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Password resets</title>
+        <search>
+          <query>index=%INDEX_NAME% EventCode=4724 host=* Account_Name=$username$ | stats count</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Accounts unlocked</title>
+        <search>
+          <query>index=%INDEX_NAME% LogName=Security EventCode=4767 host=* Account_Name=$username$|stats count</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Accounts disabled</title>
+        <search>
+          <query>index=%INDEX_NAME% EventCode=4725 host=* Account_Name=$username$|stats count</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Active Directory Group changes</title>
+        <search>
+          <query>index=%INDEX_NAME% EventCode=4728 OR 4729 Account_Name=$username$|stats count</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>List of user accounts created by $username$</title>
+        <search>
+          <query>index=%INDEX_NAME% EventCode=4720 host=* src_user=$username$|rename src_user as "Created_by"|rename Display_Name as "New_Accounts"|table New_Accounts,_time</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>List of user accounts deleted by $username$</title>
+        <search>
+          <query>index=%INDEX_NAME% EventCode=4726 host=* src_user=$username$|rename user as "Deleted_Accounts"|table Deleted_Accounts,_time</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Active Directory passwords changed for the following accounts by $username$</title>
+        <search>
+          <query>index=%INDEX_NAME% EventCode=4724 host=* src_user=$username$|rename user as "Target_Account"|table Target_Account,_time</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Accounts unlocked</title>
+        <search>
+          <query>index=%INDEX_NAME% LogName=Security EventCode=4767 host=* src_user=$username$|rename src_user as "Unlocked_by"|rename user as "Target_Account"|table Target_Account, _time</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>List of users disabled by $username$</title>
+        <search>
+          <query>index=%INDEX_NAME% EventCode=4725 host=* src_user=$username$|rename user as "Target_Account"|table Target_Account,_time</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Users added to groups</title>
+        <search>
+          <query>index=%INDEX_NAME% EventCode=4728 src_user=$username$|table user,Group_Name,_time</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>Users removed from Active Directory groups</title>
+        <search>
+          <query>index=%INDEX_NAME% EventCode=4729 src_user=$username$|table user,Group_Name,_time</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+</form>
